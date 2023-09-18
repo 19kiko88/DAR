@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="DsnService\**" />
+    <Compile Remove="Interface\NewFolder\**" />
+    <Compile Remove="Utility\**" />
+    <EmbeddedResource Remove="DsnService\**" />
+    <EmbeddedResource Remove="Interface\NewFolder\**" />
+    <EmbeddedResource Remove="Utility\**" />
+    <None Remove="DsnService\**" />
+    <None Remove="Interface\NewFolder\**" />
+    <None Remove="Utility\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+    <Compile Remove="Implement\CaeRdCheckService.cs" />
+    <Compile Remove="Implement\ViewService.cs" />
+    <Compile Remove="Interface\ICaeRdCheckService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+    <PackageReference Include="Converpedia" Version="1.9.0" />
+    <PackageReference Include="Converpedia.Models" Version="1.4.1" />
+    <PackageReference Include="DesignAuditPedia" Version="1.2.0" />
+    <PackageReference Include="ICSharpCode.SharpZipLib.dll" Version="0.85.4.369" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="dll\CAERDCheckFunction.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

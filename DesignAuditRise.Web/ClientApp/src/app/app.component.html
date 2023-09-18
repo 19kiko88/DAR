@@ -1,0 +1,14 @@
+<app-header></app-header>
+
+  <article>
+    <div class="wrap">
+
+      <router-outlet></router-outlet>
+
+
+    </div>   
+  </article>
+  
+<app-footer></app-footer>
+
+<app-loading [loader]="isLoader" [loadingMsg] = "loadingMsg"></app-loading>

@@ -1,0 +1,52 @@
+
+@media screen and (min-width: 0px)
+{
+    header {
+        min-width: 100%;
+    }    
+
+    footer {
+        min-width: 100%;
+    }
+}
+
+@media screen and (max-width: 1180px)
+{
+    .wrap {
+        width: 100%;
+        padding: 0;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+    }
+
+    .logo-eip {
+        width: auto;
+        border-right: none;
+        padding: 0 30px;
+    }
+
+    .logo a {
+        width: auto;/*30px;*/
+    }
+
+    .user {
+        float: right;
+        border: none;
+        padding: 0 10px 0 0;
+        display: none;
+    }
+
+    .user .dropdown h3 {
+        display: none;
+    }  
+    
+    footer {
+        min-width: 100%;
+    }
+
+    
+    footer .wrap {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
