@@ -1,0 +1,506 @@
+<section class="panel panel-default panel-article marg10-t">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <i class="circle fa fa-search"></i>分頁比對
+    </h3>
+  </div>
+
+  <div class="panel-body">
+
+    <div class="article-container">
+      <div class="row mb-3">
+    
+        <div class="col col-md-4">
+
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">
+                線路圖
+                <span style="color:red; font-size:10px;">(*僅限上傳副檔名為dsn, zip之檔案)</span>                
+              </h6>
+              <app-upload [limitFileSize]=300 #uploadDsn1></app-upload>
+            </div>
+
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">分頁</h6>
+              <div class="card-body-panel">
+                <app-checkbox-tree #sourceSchematic></app-checkbox-tree>
+              </div>
+            </div>
+
+            <span style="color:red;">{{sourceFileUploadMsg}}</span>
+          </div>
+
+        </div>
+    
+        <div class="col-md-auto flex-container-center-vh">
+    
+          <div style="flex-direction: column; width:30px;">
+            <div style="display:flex; justify-content: center;">
+              <span>{{cnCompareMode}}</span>
+            </div>       
+            <i [class]="compareModeIcon" aria-hidden="true"></i>
+          </div>
+        </div>
+    
+        <div class="col col-md-4">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">
+                線路圖
+                <span style="color:red; font-size:10px;">(*僅限上傳副檔名為dsn, zip之檔案)</span>                
+              </h6>
+              <app-upload [limitFileSize]=300 #uploadDsn2></app-upload>              
+            </div>
+
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted">分頁</h6>
+              <div class="card-body-panel">
+                <app-checkbox-tree #destinationSchematic></app-checkbox-tree>
+              </div>
+            </div>
+
+            <span style=color:red;>{{destinationFileUploadMsg}}</span>
+          </div>
+        </div>
+      </div>
+    
+      <form  [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-row  mb-3">
+          <div class="form-group col-md-6">
+            <label>比對模式：</label>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" value="0" formControlName="CompareMode" (change)="onCompareModeChange($event)" checked>
+              <label class="form-check-label" for="gridRadios1">
+                單向比對
+              </label>
+            </div>
+      
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" value="1" formControlName="CompareMode" (change)="onCompareModeChange($event)">
+              <label class="form-check-label" for="gridRadios2">
+                雙向比對
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" formControlName="DsnSourceFile">
+        <input type="hidden" formControlName="DsnDestinationFile">
+      
+        <button class="btn btn-primary" type="submit">開始比對</button>
+      </form>
+    </div>
+
+
+  </div>
+</section>
+
+<div class="card">
+  <div  style="padding:20px;">
+
+    <div class="info-container">
+      <div class="row">
+        <div class="col-sm">
+          分頁比對結果：
+          <span class="label label-danger" style="margin-right:5px;">{{dataSource.PartData.PartDiffs.length + dataSource.NetData.NetDiffs.length}}</span>
+          <span class="label label-warning">0</span>
+        </div>
+        <div class="col-sm">
+          Design1：
+          <ng-container *ngIf="oldSourceFileName">
+            <span class="label label-primary">{{oldSourceFileName}}</span>
+          </ng-container>   
+        </div>
+        <div class="col-sm">
+          Design2：
+          <ng-container *ngIf="oldDistinationFileName">
+            <span class="label label-primary">{{oldDistinationFileName}}</span>
+          </ng-container>          
+        </div>
+      </div>
+    </div>
+
+    <p-tabView styleClass="tabview-custom">
+      <p-tabPanel>
+          <ng-template pTemplate="header">
+              <!-- <i class="pi pi-calendar"></i> -->
+              <span>Part Err</span>              
+              <span class="label label-danger">{{dataSource.PartData.PartDiffs.length}}</span>              
+          </ng-template>
+          <p>
+            <p-table
+            #dtPart
+            [value]="dataSource.PartData.PartDiffs"
+            styleClass="p-datatable-gridlines p-datatable-striped"
+            [(selection)]="selectedPartDatas" 
+            dataKey="objID"
+            [rows]="25"
+            [showCurrentPageReport]="true"
+            [rowsPerPageOptions]="[3, 10, 25, 50]"
+            [paginator]="true"
+            currentPageReportTemplate="顯示資料 {first} 到 {last} ，總共 {totalRecords} 筆資料"
+            >
+  
+            <ng-template pTemplate="caption">
+              <div class="feature-header">
+                  <button 
+                    pButton 
+                    label="清除篩選結果" 
+                    class="p-button-outlined" 
+                    icon="pi pi-filter-slash" 
+                    style="padding:3px;"
+                    (click)="clear(dtPart)"></button>         
+                    
+                    <button 
+                    pButton 
+                    label="Excel下載" 
+                    class="p-button-outlined" 
+                    icon="pi pi-download" 
+                    style="padding:3px;"
+                    (click)="onExcelDownload('Part')"></button>                         
+              </div>
+            </ng-template>
+      
+            <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 4rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                  </th>
+                    <th class="table-header" style="min-width:12rem" pSortableColumn="part_Reference">
+                        <div class="flex align-items-center">
+                            Part Reference
+                            <p-sortIcon field="part_Reference"></p-sortIcon>
+                        </div>
+                    </th>
+                    <th style="min-width:12rem" pSortableColumn="design1PageForMultipleSelect.name">
+                        <div class="flex align-items-center">
+                            Source
+                            <p-columnFilter field="design1PageForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                                <ng-template pTemplate="header">
+                                    <div class="px-3 pt-3 pb-0">
+                                        <span class="font-bold">Design1 Page Picker</span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                    <p-multiSelect [ngModel]="value" [options]="dataSource.PartData.Design1PageGroup" placeholder="Any" (onChange)="onChangePartFilterCondition('Design1PageGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                        <ng-template let-optionDesign1Page pTemplate="item">
+                                            <div class="inline-block vertical-align-middle">
+                                                <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                                <span class="ml-1 mt-1">{{ optionDesign1Page.name }}</span>
+                                            </div>
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </ng-template>
+                            </p-columnFilter>
+      
+                            <p-sortIcon field="design1PageForMultipleSelect.name"></p-sortIcon>
+                        </div>
+                    </th>
+                    <th style="min-width:12rem" pSortableColumn="design2PageForMultipleSelect.name">
+                      <div class="flex align-items-center">
+                          Target
+                          <p-columnFilter field="design2PageForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                              <ng-template pTemplate="header">
+                                  <div class="px-3 pt-3 pb-0">
+                                      <span class="font-bold">Design2 Page Picker</span>
+                                  </div>
+                              </ng-template>
+                              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                  <p-multiSelect [ngModel]="value" [options]="dataSource.PartData.Design2PageGroup" placeholder="Any" (onChange)="onChangePartFilterCondition('Design2PageGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                      <ng-template let-optionDesign2Page pTemplate="item">
+                                          <div class="inline-block vertical-align-middle">
+                                              <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                              <span class="ml-1 mt-1">{{ optionDesign2Page.name }}</span>
+                                          </div>
+                                      </ng-template>
+                                  </p-multiSelect>
+                              </ng-template>
+                          </p-columnFilter>
+    
+                          <p-sortIcon field="design2PageForMultipleSelect.name"></p-sortIcon>
+                      </div>
+                  </th>
+                    <th style="min-width:15rem">
+                      <div class="flex align-items-center">
+                          Difference Category
+                          <p-columnFilter field="error_CategoryForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                              <ng-template pTemplate="header">
+                                  <div class="px-3 pt-3 pb-0">
+                                      <span class="font-bold">Difference Category Picker</span>
+                                  </div>
+                              </ng-template>
+                              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                  <p-multiSelect [ngModel]="value" [options]="dataSource.PartData.ErrorCategoryGroup" placeholder="Any" (onChange)="onChangePartFilterCondition('ErrorCategoryGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                      <ng-template let-optionErrorCategory pTemplate="item">
+                                          <div class="inline-block vertical-align-middle">
+                                              <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                              <span class="ml-1 mt-1">{{ optionErrorCategory.name }}</span>
+                                          </div>
+                                      </ng-template>
+                                  </p-multiSelect>
+                              </ng-template>
+                          </p-columnFilter>
+                      </div>
+                    </th>    
+                    <th style="min-width:15rem">
+                      <div class="flex align-items-center">
+                          Difference Description
+                          <p-columnFilter field="error_DescriptionForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                              <ng-template pTemplate="header">
+                                  <div class="px-3 pt-3 pb-0">
+                                      <span class="font-bold">Difference Description Picker</span>
+                                  </div>
+                              </ng-template>
+                              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                  <p-multiSelect class="mSelect" [ngModel]="value" [options]="dataSource.PartData.ErrorDescriptionGroup" placeholder="Any" (onChange)="onChangePartFilterCondition('ErrorDescriptionGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                      <ng-template let-optionErrorDescription pTemplate="item">
+                                          <div class="inline-block vertical-align-middle">
+                                              <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                              <span class="ml-1 mt-1">
+                                                <div class="text-ellipsis" title={{optionErrorDescription.name}}>{{ optionErrorDescription.name }}</div>
+                                              </span>
+                                          </div>
+                                      </ng-template>
+                                  </p-multiSelect>
+                              </ng-template>
+                          </p-columnFilter>
+                      </div>
+                    </th>  
+                    <th style="min-width:12rem" pSortableColumn="design1">
+                      <div class="flex align-items-center">
+                          Design1
+                          <p-sortIcon field="design1"></p-sortIcon>
+                      </div>
+                    </th>            
+                    <th style="min-width:12rem" pSortableColumn="design2">
+                      <div class="flex align-items-center">
+                          Design2
+                          <p-sortIcon field="design2"></p-sortIcon>
+                      </div>
+                    </th> 
+                    <th style="min-width:15rem" pSortableColumn="comment">
+                      <div class="flex align-items-center">
+                          Comment
+                          <p-sortIcon field="comment"></p-sortIcon>
+                      </div>
+                    </th>            
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-data>
+                <tr>
+                  <td>
+                    <p-tableCheckbox [value]="data"></p-tableCheckbox>
+                </td>
+                    <td>{{ data.part_Reference }}</td>
+                    <td><span class="ml-1 vertical-align-middle">{{ data.design1PageForMultipleSelect.name }}</span></td>
+                    <td><span class="ml-1 vertical-align-middle">{{ data.design2PageForMultipleSelect.name }}</span></td>
+                    <td>{{ data.error_CategoryForMultipleSelect.name }}</td>
+                    <td class="text-ellipsis" title={{data.error_DescriptionForMultipleSelect.name}}>{{ data.error_DescriptionForMultipleSelect.name }}</td>
+                    <td>{{ data.design1 }}</td>
+                    <td>{{ data.design2 }}</td>
+                    <td>{{ data.comment }}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="9">No Part data found.</td>
+                </tr>
+            </ng-template>
+            </p-table>  
+            <!-- {{selectedPartDatas|json}} -->
+          </p>
+      </p-tabPanel>
+      
+      <p-tabPanel header="NetErr">
+          <ng-template pTemplate="header">
+              <!-- <i class="pi pi-user"></i> -->
+              <span>Net Err</span>
+              <span class="label label-danger">{{dataSource.NetData.NetDiffs.length}}</span>
+          </ng-template>
+          <p>
+            <p-table
+            #dtNet
+            [value]="dataSource.NetData.NetDiffs"
+            styleClass="p-datatable-gridlines p-datatable-striped"
+            [(selection)]="selectedNetDatas" 
+            dataKey="objID"
+            [rows]="25"
+            [showCurrentPageReport]="true"
+            [rowsPerPageOptions]="[3, 10, 25, 50]"
+            [paginator]="true"
+            currentPageReportTemplate="顯示資料 {first} 到 {last} ，總共 {totalRecords} 筆資料"
+            >
+  
+            <ng-template pTemplate="caption">
+              <div class="feature-header">
+                  <button 
+                    pButton 
+                    label="清除篩選結果" 
+                    class="p-button-outlined" 
+                    icon="pi pi-filter-slash" 
+                    style="padding:3px;"
+                    (click)="clear(dtNet)"></button>         
+                    
+                    <button 
+                    pButton 
+                    label="Excel下載" 
+                    class="p-button-outlined" 
+                    icon="pi pi-download" 
+                    style="padding:3px;"
+                    (click)="onExcelDownload('Net')"></button>           
+              </div>
+            </ng-template>
+      
+            <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 4rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                  </th>
+                    <th class="table-header" style="min-width:12rem" pSortableColumn="net_Pin_Name">
+                        <div class="flex align-items-center">
+                            Net Pin Name
+                            <p-sortIcon field="net_Pin_Name"></p-sortIcon>
+                        </div>
+                    </th>
+                    <th style="min-width:12rem" pSortableColumn="design1PageForMultipleSelect.name">
+                        <div class="flex align-items-center">
+                            Source
+                            <p-columnFilter field="design1PageForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                                <ng-template pTemplate="header">
+                                    <div class="px-3 pt-3 pb-0">
+                                        <span class="font-bold">Design1 Page Picker</span>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                    <p-multiSelect [ngModel]="value" [options]="dataSource.NetData.Design1PageGroup" placeholder="Any" (onChange)="onChangeNetFilterCondition('Design1PageGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                        <ng-template let-optionDesign1Page pTemplate="item">
+                                            <div class="inline-block vertical-align-middle">
+                                                <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                                <span class="ml-1 mt-1">{{ optionDesign1Page.name }}</span>
+                                            </div>
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </ng-template>
+                            </p-columnFilter>
+      
+                            <p-sortIcon field="design1PageForMultipleSelect.name"></p-sortIcon>
+                        </div>
+                    </th>
+                    <th style="min-width:12rem" pSortableColumn="design2PageForMultipleSelect.name">
+                      <div class="flex align-items-center">
+                          Target
+                          <p-columnFilter field="design2PageForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                              <ng-template pTemplate="header">
+                                  <div class="px-3 pt-3 pb-0">
+                                      <span class="font-bold">Design2 Page Picker</span>
+                                  </div>
+                              </ng-template>
+                              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                  <p-multiSelect [ngModel]="value" [options]="dataSource.NetData.Design2PageGroup" placeholder="Any" (onChange)="onChangeNetFilterCondition('Design2PageGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                      <ng-template let-optionDesign2Page pTemplate="item">
+                                          <div class="inline-block vertical-align-middle">
+                                              <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                              <span class="ml-1 mt-1">{{ optionDesign2Page.name }}</span>
+                                          </div>
+                                      </ng-template>
+                                  </p-multiSelect>
+                              </ng-template>
+                          </p-columnFilter>
+    
+                          <p-sortIcon field="design2PageForMultipleSelect.name"></p-sortIcon>
+                      </div>
+                  </th>                  
+                    <th style="min-width:15rem">
+                      <div class="flex align-items-center">
+                          Difference Category
+                          <p-columnFilter field="error_CategoryForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                              <ng-template pTemplate="header">
+                                  <div class="px-3 pt-3 pb-0">
+                                      <span class="font-bold">Difference Category Picker</span>
+                                  </div>
+                              </ng-template>
+                              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                  <p-multiSelect [ngModel]="value" [options]="dataSource.NetData.ErrorCategoryGroup" placeholder="Any" (onChange)="onChangeNetFilterCondition('ErrorCategoryGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                      <ng-template let-optionErrorCategory pTemplate="item">
+                                          <div class="inline-block vertical-align-middle">
+                                              <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                              <span class="ml-1 mt-1">{{ optionErrorCategory.name }}</span>
+                                          </div>
+                                      </ng-template>
+                                  </p-multiSelect>
+                              </ng-template>
+                          </p-columnFilter>
+                      </div>
+                    </th>    
+                    <th style="min-width:15rem">
+                      <div class="flex align-items-center">
+                        Difference Category
+                          <p-columnFilter field="error_DescriptionForMultipleSelect" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                              <ng-template pTemplate="header">
+                                  <div class="px-3 pt-3 pb-0">
+                                      <span class="font-bold">Difference Category Picker</span>
+                                  </div>
+                              </ng-template>
+                              <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                  <p-multiSelect [ngModel]="value" [options]="dataSource.NetData.ErrorDescriptionGroup" placeholder="Any" (onChange)="onChangeNetFilterCondition('ErrorDescriptionGroup', $event.value)" (onChange)="filter($event.value)" optionLabel="name">
+                                      <ng-template let-optionErrorDescription pTemplate="item">
+                                          <div class="inline-block vertical-align-middle">
+                                              <!-- <img [alt]="option.label" src="https://primefaces.org/cdn/primeng/images/demo/avatar/{{ option.image }}" width="24" class="vertical-align-middle" /> -->
+                                              <span class="ml-1 mt-1">{{ optionErrorDescription.name }}</span>
+                                          </div>
+                                      </ng-template>
+                                  </p-multiSelect>
+                              </ng-template>
+                          </p-columnFilter>
+                      </div>
+                    </th>  
+                    <th style="min-width:12rem" pSortableColumn="design1">
+                      <div class="flex align-items-center">
+                          Design1
+                          <p-sortIcon field="design1"></p-sortIcon>
+                      </div>
+                    </th>            
+                    <th style="min-width:12rem" pSortableColumn="design2">
+                      <div class="flex align-items-center">
+                          Design2
+                          <p-sortIcon field="design2"></p-sortIcon>
+                      </div>
+                    </th> 
+                    <th style="min-width:15rem" pSortableColumn="comment">
+                      <div class="flex align-items-center">
+                          Comment
+                          <p-sortIcon field="comment"></p-sortIcon>
+                      </div>
+                    </th>            
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-data>
+                <tr>
+                  <td>
+                    <p-tableCheckbox [value]="data"></p-tableCheckbox>
+                </td>
+                    <td>{{ data.net_Pin_Name }}</td>
+                    <td>{{ data.design1PageForMultipleSelect.name }}</td>
+                    <td>{{ data.design2PageForMultipleSelect.name }}</td>
+                    <td>{{ data.error_CategoryForMultipleSelect.name }}</td>
+                    <td>{{ data.error_DescriptionForMultipleSelect.name }}</td>
+                    <td>{{ data.design1 }}</td>
+                    <td>{{ data.design2 }}</td>
+                    <td>{{ data.comment }}</td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="9">No Net data found.</td>
+                </tr>
+            </ng-template>
+            </p-table>
+            <!-- {{selectedNetDatas|json}} -->
+          </p>
+      </p-tabPanel>
+    </p-tabView>
+  
+    <!-- <pre>Active: {{ active }}</pre> -->
+  </div>
+</div>

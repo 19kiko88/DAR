@@ -12,36 +12,56 @@
 
   <ItemGroup>
     <Compile Remove="DsnService\**" />
+    <Compile Remove="Enums\**" />
     <Compile Remove="Interface\NewFolder\**" />
-    <Compile Remove="Utility\**" />
+    <Compile Remove="NewFolder\**" />
     <EmbeddedResource Remove="DsnService\**" />
+    <EmbeddedResource Remove="Enums\**" />
     <EmbeddedResource Remove="Interface\NewFolder\**" />
-    <EmbeddedResource Remove="Utility\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
     <None Remove="DsnService\**" />
+    <None Remove="Enums\**" />
     <None Remove="Interface\NewFolder\**" />
-    <None Remove="Utility\**" />
+    <None Remove="NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Class1.cs" />
+    <Compile Remove="Footprint_Compare.cs" />
     <Compile Remove="Implement\CaeRdCheckService.cs" />
     <Compile Remove="Implement\ViewService.cs" />
     <Compile Remove="Interface\ICaeRdCheckService.cs" />
+    <Compile Remove="Utility\AppCacheUtils.cs" />
+    <Compile Remove="Utility\ExcelUtils.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
-    <PackageReference Include="Converpedia" Version="1.9.0" />
+    <PackageReference Include="ClosedXML" Version="0.101.0" />
+    <PackageReference Include="Converpedia" Version="1.10.1-rc" />
     <PackageReference Include="Converpedia.Models" Version="1.4.1" />
-    <PackageReference Include="DesignAuditPedia" Version="1.2.0" />
-    <PackageReference Include="ICSharpCode.SharpZipLib.dll" Version="0.85.4.369" />
+    <PackageReference Include="DesignAuditPedia" Version="1.2.2-rc" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
+    <PackageReference Include="protobuf-net" Version="2.4.0" />
+    <PackageReference Include="SharpZipLib.NETStandard" Version="1.0.7" />
+    <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
+    <PackageReference Include="UniversalLibrary.WCF.CAEService" Version="1.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="DsnLibrary">
+      <HintPath>dll\DsnLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
     <None Update="dll\CAERDCheckFunction.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="dll\DsnLibrary.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

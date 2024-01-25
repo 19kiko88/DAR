@@ -1,28 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Enums\**" />
-    <Content Remove="Enums\**" />
-    <EmbeddedResource Remove="Enums\**" />
-    <None Remove="Enums\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Remove="AppSettings.cs" />
+    <Compile Remove="Controllers\RDCheckFunction.cs" />
     <Compile Remove="Controllers\WeatherForecastController.cs" />
     <Compile Remove="Dtos\Request\UploadFileInfo.cs" />
+    <Compile Remove="Models\Schematic.cs" />
+    <Compile Remove="Models\SchematicPage.cs" />
     <Compile Remove="WeatherForecast.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\CAE.pubxml" />
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\VT01.pubxml" />
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\VT02.pubxml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ElmahCore" Version="2.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="UniversalLibrary.Models" Version="1.1.0" />
   </ItemGroup>
 

@@ -5,7 +5,9 @@
 export const environment = {
   production: false,
   webSite: 'http://localhost:4200',
-  apiBaseUrl: 'https://localhost:7162/api',
+  apiBaseUrl: 'https://localhost:44371/api',
+  schematicViewerUrl: 'http://localhost:61795/'
+  //schematicViewerUrl: 'https://cae.corpnet.asus/SchematicViewer'
 };
 
 /*

@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build-vt02": "ng build --configuration=vt02",
+    "build-vt01": "ng build --configuration=vt01 && gzip-all \"./dist/*.{css,js}\"",
+    "prod": "ng build --prod && gzip-all \"./dist/*.{css,js}\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

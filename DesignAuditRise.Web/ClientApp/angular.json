@@ -34,7 +34,7 @@
           },
           "configurations": {
             "vt02": {
-              "baseHref": "/rda/",
+              "baseHref": "/DAR/",
               "budgets": [
                 {
                   "type": "anyComponentStyle",
@@ -49,7 +49,7 @@
               ]
             },
             "vt01": {
-              "baseHref": "/rda/",
+              "baseHref": "/DAR/",
               "budgets": [
                 {
                   "type": "anyComponentStyle",
@@ -71,7 +71,7 @@
               "buildOptimizer": true
             },                        
             "production": {
-              "baseHref": "/rda/",
+              "baseHref": "/DAR/",
               "budgets": [
                 {
                   "type": "anyComponentStyle",

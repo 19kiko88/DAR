@@ -9,7 +9,7 @@ body {
 
 html, body, input, textarea, option {
     font-family: "Segoe UI", Helvetica Neue, Arial, "微軟正黑體";
-    *font-family: "微軟正黑體", Helvetica Neue, Arial;
+    /* font-family: "微軟正黑體", Helvetica Neue, Arial; */
     font-size: 15px;
 }
 
@@ -73,7 +73,7 @@ header .wrap {
 }
 
 /*個人相關事項*/
-.user {
+/*.user {
     position: relative;
     display: block;
     float: right;
@@ -83,6 +83,7 @@ header .wrap {
     border-right: 1px solid #444;
     border-left: 1px solid #444;
 }
+*/
 
 h3 .user-name {
     font-size: 14px;
@@ -96,7 +97,7 @@ header h3 {
     line-height: 54px;
 }
 
-.user .dropdown h3 {
+/* .user .dropdown h3 {
     display: block;
     padding: 0 9px 0 6px;
     max-width: 210px;
@@ -107,7 +108,7 @@ header h3 {
     text-overflow: ellipsis;
     overflow: hidden;
     text-decoration: none;
-}
+} */
 
 .user .dropdown .fa-user {
     display: block;
@@ -132,13 +133,13 @@ header h3 {
 article {
     position: relative;
     min-height: calc(100vh - 80px);        
-    margin-top: 10px !important;    
+    /* margin-top: 10px !important;     */
     padding-bottom: 50px !important;
     background-color: #d2e7ef;
 }
 
 article .wrap{
-    padding : 60px 30px;
+    padding : 10px 30px;
 } 
 
 article section {
@@ -328,6 +329,7 @@ footer .copyright {
     white-space: nowrap;
     vertical-align: baseline;
     border-radius: .25em;
+    margin:auto 5px;
 }
 
 .info-container{
@@ -338,9 +340,22 @@ footer .copyright {
     padding: 5px 1rem !important;
 }
 
+a.p-tabview-nav-link {
+    padding: 5px 1rem !important;
+}
+
 .feature-header
 {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;    
+}
+
+.text-ellipsis,
+.mSelect .p-multiselect-label
+{
+    max-width:120px; 
+    overflow: hidden; 
+    white-space: nowrap; 
+    text-overflow: ellipsis;
 }

@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
-  webSite: 'https://cae.corpnet.asus/rda',
-  apiBaseUrl: 'https://cae.corpnet.asus/rda/api',
+  webSite: 'https://cae.corpnet.asus/DAR',
+  apiBaseUrl: 'https://cae.corpnet.asus/DAR/api',
+  schematicViewerUrl: 'https://cae.corpnet.asus/SchematicViewer'
 };
