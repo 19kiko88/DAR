@@ -28,7 +28,7 @@ namespace DesignAuditRise.Service.OuterService.Implement
         /// <returns>遠端Server所存轉檔路徑</returns>
         public async Task<Result> ToExp3File(string dsnFilePath)
         {
-            return await _dsnService.ToExp3File(dsnFilePath);
+            return await _dsnService.ToExp3NewFile(dsnFilePath);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace DesignAuditRise.Service.OuterService.Implement
         /// <returns></returns>
         public async Task<Result<Exp1>> Exp1FileToEntity(string exp1Path)
         {
-            return await _exp1Service.Exp1FileToEntity(exp1Path);
+            return await _exp1Service.Exp1NewFileToEntity(exp1Path);
         }
 
         /// <summary>

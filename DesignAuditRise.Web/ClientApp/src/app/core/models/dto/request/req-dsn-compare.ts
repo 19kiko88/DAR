@@ -4,6 +4,8 @@ export interface ReqDsnCompare {
     CompareMode: string
     //SourceSchematic: TodoItemNode[],
     //DestinationSchematic: TodoItemNode[],
+    SourceId?: string
+    DestId?: string
     SelectedSourceSchematicPage: TodoItemFlatNode[]
     SelectedDestinationSchematicPage: TodoItemFlatNode[]
   }

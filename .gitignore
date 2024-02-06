@@ -423,7 +423,3 @@ FodyWeavers.xsd
 Upload
 ExpFile
 /DesignAuditRise.Web/wwwroot
-/DesignAuditRise.Web/appsettings.Development.json
-/DesignAuditRise.Web/*.json
-/DesignAuditRise.Web/appsettings.json
-environments

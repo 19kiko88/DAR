@@ -38,7 +38,7 @@ namespace DesignAuditRise.Web.Controllers
         *172.22.136.54 => vt01
         *172.22.136.97 => vt02
         */
-        private const string _allowIpList = "172.21.130.8,172.22.136.54,172.22.136.97,::1,127.0.0.1";
+        private const string _allowIpList = "172.21.130.8,172.22.136.54,172.22.136.97";
 
         public DesignAuditRiseController(
             IDesignAuditRiseService designAuditRiseService,
@@ -98,7 +98,7 @@ namespace DesignAuditRise.Web.Controllers
 
                 var extension = Path.GetExtension(file.FileName).ToLower();
                 uploadFileInfo.OldFileName = file.FileName;                
-                uploadFileInfo.NewFileName = $"{Path.GetFileNameWithoutExtension(fileName)}_{DateTime.Now.ToString("yyyyMMddHHmmss")}{extension}";
+                uploadFileInfo.NewFileName = $"{Path.GetFileNameWithoutExtension(fileName)}_{DateTime.Now.ToString("yyyyMMddHHmmssfff")}{extension}";
 
                 var fullPath = Utils.SecurityPathCombine(extension == ".dsn" ? dsnFileUploadPath : zipFileUploadPath, uploadFileInfo.NewFileName);
                 var buffer = 1024 * 1024;
@@ -459,10 +459,10 @@ namespace DesignAuditRise.Web.Controllers
             try
             {
                 var userName = User.Identity.Name.Split('\\')[1];
-                var rootSourceExpFileTempPath = Utils.SecurityPathCombine(expFileTempPath, userName, SchematicType.Source);
-                var rootDestinationExpFileTempPath = Utils.SecurityPathCombine(expFileTempPath, userName, SchematicType.Destination);
-                var rootSourceDatFileTempPath = Utils.SecurityPathCombine(datFileTempPath, userName, SchematicType.Source, "part.dat");
-                var rootDestinationDatFileTempPath = Utils.SecurityPathCombine(datFileTempPath, userName, SchematicType.Destination, "part.dat");
+                var rootSourceExpFileTempPath = Utils.SecurityPathCombine(expFileTempPath, string.IsNullOrEmpty(data.SourceId) ? userName : "OrCad", string.IsNullOrEmpty(data.SourceId) ? SchematicType.Source : data.SourceId);
+                var rootDestinationExpFileTempPath = Utils.SecurityPathCombine(expFileTempPath, string.IsNullOrEmpty(data.DestId) ? userName : "OrCad", string.IsNullOrEmpty(data.DestId) ? SchematicType.Destination : data.DestId);
+                var rootSourceDatFileTempPath = Utils.SecurityPathCombine(datFileTempPath, string.IsNullOrEmpty(data.SourceId) ? userName : "OrCad", string.IsNullOrEmpty(data.SourceId) ? SchematicType.Source : data.SourceId, "part.dat");
+                var rootDestinationDatFileTempPath = Utils.SecurityPathCombine(datFileTempPath, string.IsNullOrEmpty(data.DestId) ? userName : "OrCad", string.IsNullOrEmpty(data.DestId) ? SchematicType.Destination : data.DestId, "part.dat");
 
                 //Get [Source] Compare Parameter
                 var sourceExp1Path = Utils.GetExp1FilePath(rootSourceExpFileTempPath);
@@ -588,12 +588,22 @@ namespace DesignAuditRise.Web.Controllers
         [HttpGet]
         [AllowAnonymous]
         [DesignAuditRise.Web.Filters.AllowedIp(_allowIpList)]
-        [Route("{userName}/{darType}")]
-        public async Task<IActionResult> GetDrawingData(string userName, string darType)
+        [Route("{darType}/{folderName}")]        
+        public async Task<IActionResult> GetDrawingData(string darType, string folderName)
         {           
             try
             {
-                string filePath = Utils.SecurityPathCombine(datFileTempPath, userName, darType,  _designAuditRiseService.ProtoBuffDataFileName);
+                string filePath = string.Empty;
+
+                if (darType.ToLower() == "orcad")
+                {
+                    filePath = Utils.SecurityPathCombine(datFileTempPath, darType, folderName, _designAuditRiseService.ProtoBuffDataFileName);
+                }
+                else
+                {
+                    filePath = Utils.SecurityPathCombine(datFileTempPath, darType, folderName, _designAuditRiseService.ProtoBuffDataFileName);
+                }
+
                 if (System.IO.File.Exists(filePath))
                 {
                     var stream = new FileStream(filePath, FileMode.Open);

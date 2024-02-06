@@ -5,6 +5,9 @@ namespace DesignAuditRise.Web.Dtos.Request
     public class ReqComparePageDto
     {
         public string CompareMode { get; set; }
+        public string? SourceId { get; set; }
+        public string? DestId { get; set; }
+
         public List<SchematicPageInfoModel> SelectedSourceSchematicPage { get; set; }
         public List<SchematicPageInfoModel> SelectedDestinationSchematicPage { get; set; }
 

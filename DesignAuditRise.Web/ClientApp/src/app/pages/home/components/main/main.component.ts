@@ -67,6 +67,9 @@ export class MainComponent implements OnInit
     comparePageMapping:[]
   }
 
+  sourceId: string = '';
+  destId: string = '';
+
   constructor
   (
     private _rdaService: RdaService,
@@ -85,14 +88,14 @@ export class MainComponent implements OnInit
   {  
     this.route.queryParams.pipe(
       concatMap(param => {
-        let sourceId = param['sourceId'];
-        let destId = param['destId'];
+        this.sourceId = param['sourceId']??'';
+        this.destId = param['destId']??'';
 
-        if(sourceId || destId)
+        if(this.sourceId || this.destId)
         {
           //由API取得Schematic資料
           this._loadingService.setLoading(true, "線路圖自動載入中...");
-          return this._rdaService.GetSchematicData(sourceId, destId, 'OrCad');
+          return this._rdaService.GetSchematicData(this.sourceId, this.destId, 'OrCad');
         } 
         else 
         {
@@ -375,6 +378,7 @@ export class MainComponent implements OnInit
               this.form.controls[FormControlName.inputDsnSourceFileName].setValue(res.content);
               this.sourceSchematic.dataSource.data = res.content.schematicDatas;
               this.sourceSchematic.expandAll();
+              this.sourceId = '';
             }
             else 
             {
@@ -383,6 +387,7 @@ export class MainComponent implements OnInit
               this.form.controls[FormControlName.inputDsnDestinationFileName].setValue(res.content);
               this.destinationSchematic.dataSource.data = res.content.schematicDatas;
               this.destinationSchematic.expandAll();
+              this.destId = '';
             }
 
             let msg = "分頁取得完成.";
@@ -433,6 +438,17 @@ export class MainComponent implements OnInit
       SelectedSourceSchematicPage:sourceSchematicSelectedNode,
       SelectedDestinationSchematicPage:destinationSchematicSelectedNode
     }
+
+    if (this.sourceId)
+    {
+      data.SourceId = this.sourceId;
+    }
+
+    if (this.destId)
+    {
+      data.DestId = this.destId;
+    }
+
 
     if (data.SelectedSourceSchematicPage.length <= 0 || data.SelectedDestinationSchematicPage.length <= 0)
     {
@@ -495,18 +511,27 @@ export class MainComponent implements OnInit
 
           let rdcsSN = res.designSN1;
           let designName = this.oldSourceFileName;
-          let darType = 'source';
+          let darType = this.sourceId ? 'orcad' : 'source';
           let width = window.screen.availWidth/2 ;
           let height = window.screen.availHeight - 65;
-          let dualScreenLeft = 0;      
-          this.w1 = window.open(`${environment.schematicViewerUrl}?rdcsSN=${rdcsSN}&designName=${designName}&consoleHost=${environment.apiBaseUrl}&darType=${darType}`, "_blank", `scrollbars=1,toolbar=0,resizable=1,status=0,width=${width},height=${height},top=0,left=${dualScreenLeft},directores=0`) ?? undefined;
+          let dualScreenLeft = 0;    
+                      
+          this.w1 = window.open(
+            `${environment.schematicViewerUrl}?rdcsSN=${rdcsSN}&designName=${designName}&consoleHost=${environment.apiBaseUrl}&darType=${darType}&fileId=${this.sourceId}`, 
+            "_blank", 
+            `scrollbars=1,toolbar=0,resizable=1,status=0,width=${width},height=${height},top=0,left=${dualScreenLeft},directores=0`
+            ) ?? undefined;
 
 
           rdcsSN = res.designSN2;
           designName = this.oldDistinationFileName;
-          darType = 'destination';
-          dualScreenLeft = width;//window.screenLeft != undefined ? window.screenLeft : (<any>screen).left;
-          this.w2 = window.open(`${environment.schematicViewerUrl}?rdcsSN=${rdcsSN}&designName=${designName}&consoleHost=${environment.apiBaseUrl}&darType=${darType}`, "_blank", `scrollbars=1,toolbar=0,resizable=1,status=0,width=${width},height=${height},top=0,left=${dualScreenLeft},directores=0`) ?? undefined;     
+          darType = this.destId ? 'orcad' : 'destination';
+          dualScreenLeft = width;//window.screenLeft != undefined ? window.screenLeft : (<any>screen).left;          
+          this.w2 = window.open(
+            `${environment.schematicViewerUrl}?rdcsSN=${rdcsSN}&designName=${designName}&consoleHost=${environment.apiBaseUrl}&darType=${darType}&fileId=${this.destId}`, 
+            "_blank", 
+            `scrollbars=1,toolbar=0,resizable=1,status=0,width=${width},height=${height},top=0,left=${dualScreenLeft},directores=0`
+            ) ?? undefined;     
         },
         error: (err) => {          
           this._loadingService.setLoading(false);
