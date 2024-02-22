@@ -30,13 +30,18 @@ builder.Services.Configure<AppSettingsInfoModel.DsnServiceParameters>(builder.Co
 builder.Services.Configure<AppSettingsInfoModel.PathSettings>(builder.Configuration.GetSection(AppSettingsInfoModel._PathSettings));
 builder.Services.Configure<AppSettingsInfoModel.UrlSettings>(builder.Configuration.GetSection(AppSettingsInfoModel._UrlSettings));
 
-
 builder.Services.AddScoped<IDesignAuditRiseService, DesignAuditRiseService>();
 builder.Services.AddScoped<ICommonService, CommonService>();
-builder.Services.AddScoped<IFileService, FileService>();
-builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.ICommonOuterService, DesignAuditRise.Service.OuterService.Implement.CommonOuterService>();
+builder.Services.AddScoped<IProtobufService, ProtobufService>();
+builder.Services.AddScoped<IExcelService, ExcelService>();
+builder.Services.AddScoped<IZipService, ZipService>();
+builder.Services.AddScoped<IFileWrapper, FileWrapper>();
+builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IOraOuterService, DesignAuditRise.Service.OuterService.Implement.OraOuterService>();
 builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IConvertPediaOuterService, DesignAuditRise.Service.OuterService.Implement.ConvertPediaOterService>();
-builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IDesignAuditRiseOuterService, DesignAuditRise.Service.OuterService.Implement.DesignAuditRiseOterService>();
+builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IDesignCompareOuterService, DesignAuditRise.Service.OuterService.Implement.DesignCompareOterService>();
+builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IProcessDsnOuterService, DesignAuditRise.Service.OuterService.Implement.ProcessDsnOuterService>();
+
+
 
 
 

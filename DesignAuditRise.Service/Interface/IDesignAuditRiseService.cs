@@ -22,7 +22,7 @@ namespace DesignAuditRise.Service.Interface
         /// <param name="zipFilePath">zip檔位置</param>
         /// <param name="expFileTempPath">解壓縮後的exp檔案位置</param>
         /// <returns></returns>
-        public Task GetExp3FileFromZIP(string zipFilePath, string extractPath);
+        public Task<string[]> GetExp3FileFromZip(string zipFilePath, string extractPath);
 
         /// <summary>
         /// exp1檔案轉換Entity Model
@@ -32,7 +32,7 @@ namespace DesignAuditRise.Service.Interface
         public Task<Exp1> Exp1FileToEntity(string exp1Path);
 
         /// <summary>
-        /// 篩選出所選取的Schematic Page
+        /// 把前端沒有勾選的Page篩選掉，只保留前端有勾選的Pages。減少資料量
         /// </summary>
         /// <param name="originalExp1Entity"></param>
         /// <param name="filterPage"></param>
@@ -57,7 +57,7 @@ namespace DesignAuditRise.Service.Interface
         /// </summary>
         /// <param name="expFilePath"></param>
         /// <returns></returns>
-        public Task<string> EXPtoData(string expFilePath);
+        public Task<string> ExpFileToDatFile(string expFilePath);
 
         /// <summary>
         /// UI勾選比對分頁後，篩選part.dat檔案裡的Page，並重新產出part.dat檔 & zip壓縮檔給Schematic Viwer
@@ -65,7 +65,7 @@ namespace DesignAuditRise.Service.Interface
         /// <param name="partDataFilePath">part.dat檔案路徑</param>
         /// <param name="filterPage"></param>
         /// <returns></returns>
-        public Task<string> CreateFilterPagePartData(string partDataFilePath, string[] filterPage);
+        public Task<(List<string> filterPartByPage, string[] zipedFiles, string errMsg)> CreateProtobuffZip(string partDataFilePath, string[] filterPage);
 
         /// <summary>
         /// 取得Schematic ，並排序分頁(小=>大)

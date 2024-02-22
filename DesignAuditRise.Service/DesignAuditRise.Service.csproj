@@ -33,6 +33,7 @@
     <Compile Remove="Interface\ICaeRdCheckService.cs" />
     <Compile Remove="Utility\AppCacheUtils.cs" />
     <Compile Remove="Utility\ExcelUtils.cs" />
+    <Compile Remove="Utility\ZipUtils.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,6 +47,7 @@
     <PackageReference Include="NETStandard.Library" Version="2.0.3" />
     <PackageReference Include="protobuf-net" Version="2.4.0" />
     <PackageReference Include="SharpZipLib.NETStandard" Version="1.0.7" />
+    <PackageReference Include="System.IO.Abstractions" Version="20.0.15" />
     <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />
     <PackageReference Include="UniversalLibrary.WCF.CAEService" Version="1.9.2" />
   </ItemGroup>

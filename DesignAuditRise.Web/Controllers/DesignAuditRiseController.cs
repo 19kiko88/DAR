@@ -21,9 +21,8 @@ namespace DesignAuditRise.Web.Controllers
     public class DesignAuditRiseController : ControllerBase
     {
         private readonly IDesignAuditRiseService _designAuditRiseService;
-        private readonly IFileService _fileService;
         private readonly IWebHostEnvironment _hostEnv;
-        private readonly IFileService _excelService;
+        private readonly IExcelService _excelService;
         private string dsnFileUploadPath = string.Empty;
         private string zipFileUploadPath = string.Empty;
         private string expFileTempPath = string.Empty;
@@ -38,20 +37,18 @@ namespace DesignAuditRise.Web.Controllers
         *172.22.136.54 => vt01
         *172.22.136.97 => vt02
         */
-        private const string _allowIpList = "172.21.130.8,172.22.136.54,172.22.136.97";
+        private const string _allowIpList = "172.21.130.8,172.22.136.54,172.22.136.97,::1,127.0.0.1";
 
         public DesignAuditRiseController(
             IDesignAuditRiseService designAuditRiseService,
-            IFileService fileService,
             IWebHostEnvironment hostEnv,
-            IFileService excelService,
+            IExcelService excelService,
             IOptions<AppSettingsInfoModel.PathSettings> pathSettings,
             IOptions<AppSettingsInfoModel.OtherSettings> otherSettings,
             IOptions<AppSettingsInfoModel.UrlSettings> urlSettings
         )
         { 
             _designAuditRiseService = designAuditRiseService;
-            _fileService = fileService;
             _hostEnv = hostEnv;
             _excelService = excelService;
             dsnFileUploadPath = Utils.SecurityPathCombine(hostEnv.ContentRootPath, "Content\\Upload\\Dsn");
@@ -201,7 +198,7 @@ namespace DesignAuditRise.Web.Controllers
                     }
                     else
                     {
-                        _designAuditRiseService.GetExp3FileFromZIP(fullFileUploadPath, fullExpFileTempPath);
+                        _designAuditRiseService.GetExp3FileFromZip(fullFileUploadPath, fullExpFileTempPath);
                         expFilePath = fullExpFileTempPath;
                     }
 
@@ -209,7 +206,7 @@ namespace DesignAuditRise.Web.Controllers
                     *.exp to .dat file
                     *先執行一次exp to dat。轉出完整part.dat，勾選比對分頁後，在於比對時產出分頁篩選過後的part.dat
                     */
-                    var resEXPtoData = _designAuditRiseService.EXPtoData(expFilePath).Result;
+                    var resEXPtoData = _designAuditRiseService.ExpFileToDatFile(expFilePath).Result;
                     if (string.IsNullOrEmpty(resEXPtoData))
                     {
                         var datFiles = Directory.EnumerateFiles(expFilePath).Where(c => !c.EndsWith(".exp1", StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -326,10 +323,10 @@ namespace DesignAuditRise.Web.Controllers
                     try
                     {
                         //解壓縮zip檔
-                        _designAuditRiseService.GetExp3FileFromZIP(dicItem.Value, extractPath);
+                        _designAuditRiseService.GetExp3FileFromZip(dicItem.Value, extractPath);
 
                         //.exp檔 => .dat檔
-                        var resEXPtoData = _designAuditRiseService.EXPtoData(extractPath).Result;
+                        var resEXPtoData = _designAuditRiseService.ExpFileToDatFile(extractPath).Result;
                         if (string.IsNullOrEmpty(resEXPtoData))
                         {
                             var datFiles = Directory.EnumerateFiles(extractPath).Where(c => !c.EndsWith(".exp1", StringComparison.OrdinalIgnoreCase)).ToArray();
@@ -470,10 +467,10 @@ namespace DesignAuditRise.Web.Controllers
                 var sourceSelectedPage = data.SelectedSourceSchematicPage.Select(c => c.item).ToArray();
                 var sourceCloneExp1Entity = await _designAuditRiseService.GetFilterPage(sourceExp1Entity, sourceSelectedPage);
                 //.exp to .dat file for Schematic Viewer。產生篩選分頁後的dat檔案跟Schematic Viewer做檔案交換。
-                var sourceEXPtoData = await _designAuditRiseService.CreateFilterPagePartData(rootSourceDatFileTempPath, sourceSelectedPage);
-                if (!string.IsNullOrEmpty(sourceEXPtoData))
+                var sourceEXPtoData = await _designAuditRiseService.CreateProtobuffZip(rootSourceDatFileTempPath, sourceSelectedPage);
+                if (!string.IsNullOrEmpty(sourceEXPtoData.errMsg))
                 {
-                    result.Message = sourceEXPtoData;
+                    result.Message = sourceEXPtoData.errMsg;
                     return result;
                 }
 
@@ -483,10 +480,10 @@ namespace DesignAuditRise.Web.Controllers
                 var destinationSelectedPage = data.SelectedDestinationSchematicPage.Select(c => c.item).ToArray();
                 var destinationCloneExp1Entity = await _designAuditRiseService.GetFilterPage(destinationExp1Entity, destinationSelectedPage);
                 //.exp to .dat file for Schematic Viewer。產生篩選分頁後的dat檔案跟Schematic Viewer做檔案交換。
-                var destinationEXPtoData = await _designAuditRiseService.CreateFilterPagePartData(rootDestinationDatFileTempPath, destinationSelectedPage);
-                if (!string.IsNullOrEmpty(destinationEXPtoData))
+                var destinationEXPtoData = await _designAuditRiseService.CreateProtobuffZip(rootDestinationDatFileTempPath, destinationSelectedPage);
+                if (!string.IsNullOrEmpty(destinationEXPtoData.errMsg))
                 {
-                    result.Message = destinationEXPtoData;
+                    result.Message = destinationEXPtoData.errMsg;
                     return result;
                 }
 

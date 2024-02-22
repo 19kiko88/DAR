@@ -8,9 +8,9 @@ namespace DesignAuditRise.Service.Implement
     public  class CommonService: DesignAuditRise.Service.Interface.ICommonService
     {
         private readonly int cacheExpireTime = 1440;//快取保留時間
-        private readonly OuterService.Interface.ICommonOuterService _commonService;
+        private readonly OuterService.Interface.IOraOuterService _commonService;
 
-        public CommonService(OuterService.Interface.ICommonOuterService commonService) 
+        public CommonService(OuterService.Interface.IOraOuterService commonService) 
         {
             _commonService = commonService;
         }

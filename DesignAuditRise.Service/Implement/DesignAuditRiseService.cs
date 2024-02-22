@@ -4,8 +4,7 @@ using DesignAuditRise.Service.Interface;
 using DesignAuditRise.Service.Models;
 using DesignAuditRise.Service.Utility;
 using DsnLibrary.Models;
-using ICSharpCode.SharpZipLib.Zip;
-using ProtoBuf;
+using System.Text.RegularExpressions;
 using UniversalLibrary.Models;
 
 namespace DesignAuditRise.Service.Implement
@@ -13,18 +12,29 @@ namespace DesignAuditRise.Service.Implement
     public class DesignAuditRiseService : IDesignAuditRiseService
     {
         private readonly OuterService.Interface.IConvertPediaOuterService _outerConvertPediaService;
-        private readonly OuterService.Interface.IDesignAuditRiseOuterService _designAuditRiseService;
-        private readonly string[] allowFileNameFromExpFileFolder = { "part.dat", "cache.dat", "font.dat", "tree.dat", ".png", ".pdf" };
-        private readonly string[] allowFileNameFromUploadZip = { "part.exp", "cache.exp", "font.exp", ".exp1", ".png", ".pdf" };
+        private readonly OuterService.Interface.IDesignCompareOuterService _designAuditRiseService;
+        private readonly OuterService.Interface.IProcessDsnOuterService _processDsnService;
+        private readonly IProtobufService _fileService;
+        private readonly IZipService _zipService;
+        private readonly IFileWrapper _fileWrapper;
+
         public string ProtoBuffDataFileName { get; } = "ProtoBuffData.zip";
 
         public DesignAuditRiseService(
             OuterService.Interface.IConvertPediaOuterService convertPediaService,
-            OuterService.Interface.IDesignAuditRiseOuterService designAuditRiseService
+            OuterService.Interface.IDesignCompareOuterService designAuditRiseService,
+            OuterService.Interface.IProcessDsnOuterService processDsnService,
+            IProtobufService fileService,
+            IZipService zipService,
+            IFileWrapper fileWrapper
         )
         {
             _outerConvertPediaService = convertPediaService;
             _designAuditRiseService = designAuditRiseService;
+            _processDsnService = processDsnService;
+            _fileService = fileService;
+            _zipService = zipService;
+            _fileWrapper = fileWrapper;
         }
 
         /// <summary>
@@ -43,33 +53,33 @@ namespace DesignAuditRise.Service.Implement
         /// <param name="zipFilePath">zip檔位置</param>
         /// <param name="expFileTempPath">解壓縮後的exp檔案位置</param>
         /// <returns></returns>
-        public async Task GetExp3FileFromZIP(string zipFilePath, string expFileTempPath)
-        {
-            var filterFiles = new string[] { };
-            var fastZip = new FastZip();
-
+        public async Task<string[]> GetExp3FileFromZip(string zipFilePath, string expFileTempPath)
+        {            
             //建立暫存解壓縮資料的資料夾
             var extractPath = zipFilePath.Replace(Path.GetExtension(zipFilePath), "");
-            if (!Directory.Exists(extractPath))
+            if (!_fileWrapper.DirectoryExists(extractPath))
             {
-                Directory.CreateDirectory(extractPath);
+                _fileWrapper.DirectoryCreate(extractPath);
             }
 
             //解壓縮
-            fastZip.ExtractZip(zipFilePath, extractPath, null);
+            _zipService.ExtractZip(zipFilePath, extractPath, null);
 
             //篩選檔名part.exp, cache.exp, font.exp & 副檔名為.png, .pdf的壓縮資料，搬移解壓縮檔案到exp file資料夾
-            filterFiles = Directory.GetFiles(extractPath, "*", SearchOption.AllDirectories).Where(p => allowFileNameFromUploadZip.Any(q => p.EndsWith(q, StringComparison.OrdinalIgnoreCase))).ToArray();
+            var files = _fileWrapper.DirectoryFilesGet(extractPath, "*", SearchOption.AllDirectories);
+            //var filterFiles = files.Where(p => allowFileNameFromUploadZip.Any(q => p.EndsWith(q, StringComparison.OrdinalIgnoreCase))).ToArray();
+            var filterFiles = files.Where(c => Regex.Match(Path.GetFileName(c), @"^.*\.([Ee]xp1|[Pp]ng|[Pp]df)$|^([Pp]art|[Cc]ache|[Ff]ont)\.exp$").Success).ToArray();
 
             //搬移解壓縮檔案到exp file資料夾
             foreach (var f in filterFiles)
             {
-                File.Copy(f, Utils.SecurityPathCombine(expFileTempPath, Path.GetFileName(f)), true);
+                _fileWrapper.FileCopy(f, Utils.SecurityPathCombine(expFileTempPath, Path.GetFileName(f)), true);
             }
 
             //刪除暫存解壓縮資料的資料夾            
-            Directory.Delete(extractPath, true);
+            _fileWrapper.DirectoryDelete(extractPath, true);
 
+            return filterFiles;
         }
 
         /// <summary>
@@ -96,19 +106,17 @@ namespace DesignAuditRise.Service.Implement
         }
 
         /// <summary>
-        /// 篩選出所選取的Schematic Page
+        /// 把前端沒有勾選的Page篩選掉，只保留前端有勾選的Pages。減少資料量
         /// </summary>
         /// <param name="originalExp1Entity"></param>
         /// <param name="filterPage"></param>
         /// <returns></returns>
         public async Task<Exp1> GetFilterPage(Exp1 originalExp1Entity, string[] filterPage)
-        {
-            var exp1Entity = originalExp1Entity;
-            var cloneExp1Schematics = originalExp1Entity.Schematics.Select(c => new Schematic { Name = c.Name, Pages = c.Pages }).ToList();
+        {            
             var cloneExp1Entity = new Exp1()
             {
-                Path = exp1Entity.Path,
-                Schematics = cloneExp1Schematics
+                Path = originalExp1Entity.Path,
+                Schematics = originalExp1Entity.Schematics.Select(c => new Schematic { Name = c.Name, Pages = c.Pages }).ToList()
             };
             foreach (var schematicItem in cloneExp1Entity.Schematics)
             {
@@ -156,26 +164,10 @@ namespace DesignAuditRise.Service.Implement
         /// </summary>
         /// <param name="expFilePath"></param>
         /// <returns></returns>
-        public async Task<string> EXPtoData(string expFilePath)
+        public async Task<string> ExpFileToDatFile(string expFilePath)
         {
-            var errMsg = string.Empty;
-            var processDsn = new DsnLibrary.ProcessDSN(expFilePath);
-
-            if (processDsn.EXPtoData("", out errMsg))
-            {
-                try
-                {
-                    //儲存成維修檔                    
-                    string[] schematicViwerFiles = Directory.EnumerateFiles(expFilePath).Where(p => allowFileNameFromExpFileFolder.Any(q => p.EndsWith(q, StringComparison.OrdinalIgnoreCase))).ToArray();
-                    FileProcessUtils.zipFiles(expFilePath + "\\" + ProtoBuffDataFileName, schematicViwerFiles);
-                }
-                catch (Exception ex)
-                {
-                    errMsg = ex.Message;
-                }
-            }
-
-            return errMsg;
+            var resTransfer = _processDsnService.EXPtoDatFile(expFilePath).errMsg;//.exp => .dat
+            return resTransfer;
         }
 
         /// <summary>
@@ -184,41 +176,36 @@ namespace DesignAuditRise.Service.Implement
         /// <param name="partDataFilePath">part.dat檔案路徑</param>
         /// <param name="filterPage"></param>
         /// <returns></returns>
-        public async Task<string> CreateFilterPagePartData(string partDataFilePath, string[] filterPage) 
+        public async Task<(List<string> filterPartByPage, string[]zipedFiles, string errMsg)> CreateProtobuffZip(string partDataFilePath, string[] filterPage) 
         {
+            var filterPartByPage = new List<string>();            
+            var zipedFiles = new string[] {};
             var errMsg = string.Empty;
 
             try
             {
-                if (File.Exists(partDataFilePath))
+                if (_fileWrapper.FileExists(partDataFilePath))
                 {
-                    var bytes = File.ReadAllBytes(partDataFilePath);
-                    var partData = new List<PagePart>();
+                    //protobuf的dat檔轉成List，並依照勾選Page篩選，減少資料內容。
+                    var listPart = await _fileService.ProtobufDatFileToList<PagePart>(partDataFilePath);
+                    listPart = listPart.Where(c => filterPage.Contains(c.Page)).ToList();
+                    filterPartByPage = listPart.Select(c => c.Page).ToList();
 
-                    //把原本的dat反序列化回Entity，並篩選分頁.
-                    using (var ms = new MemoryStream(bytes, 0, bytes.Length, true, true))
+
+                    //刪除原本的filter_part.dat檔，並重新產出一份篩選過內容的filter_part.dat
+                    var newProtobufDatFilePath = Utils.SecurityPathCombine(Path.GetDirectoryName(partDataFilePath), "filter_part.dat");
+                    if (File.Exists(newProtobufDatFilePath))
                     {
-                        partData = FileProcessUtils.LoadStream<PagePart>(ms);
+                        File.Delete(newProtobufDatFilePath);
                     }
-                    partData = partData.Where(c => filterPage.Contains(c.Page)).ToList();
+                    await _fileService.SaveProtobufDatFile(newProtobufDatFilePath, listPart);
 
-                    //刪除原本的filter_part.dat檔
-                    var filterDatFilePath = Utils.SecurityPathCombine(Path.GetDirectoryName(partDataFilePath), "filter_part.dat");
-                    if (File.Exists(filterDatFilePath))
-                    {
-                        File.Delete(filterDatFilePath);
-                    }
-                    var filterPartData = File.Create(filterDatFilePath);
-
-                    //序列化回新的filter_part.dat檔
-                    Serializer.Serialize((Stream)filterPartData, partData);
-
-                    filterPartData.Close();
 
                     //重新壓縮zip檔(要給Schematic Viewer的檔案)
                     var parentPath = partDataFilePath.Substring(0, partDataFilePath.LastIndexOf(@"\") + 1);
-                    var zipFiles = Directory.EnumerateFiles(parentPath).Where(p => allowFileNameFromExpFileFolder.Any(q => p.EndsWith(q, StringComparison.OrdinalIgnoreCase))).ToArray();
-                    FileProcessUtils.zipFiles(Utils.SecurityPathCombine(parentPath, ProtoBuffDataFileName), zipFiles);
+                    //zipedFiles = _fileWrapper.DirectoryEnumerateFiles(parentPath).Where(p => allowFileNameFromExpFileFolder.Any(q => p.EndsWith(q, StringComparison.OrdinalIgnoreCase))).ToArray();
+                    zipedFiles = _fileWrapper.DirectoryEnumerateFiles(parentPath).Where(c => Regex.Match(Path.GetFileName(c), @"^.*\.([P|p]ng|[P|p]df)$|^([Ff]ilter_part|[Pp]art|[Cc]ache|[Ff]ont|[Tt]ree)\.dat$").Success).ToArray();
+                    _zipService.Zip(Utils.SecurityPathCombine(parentPath, ProtoBuffDataFileName), zipedFiles);
                 }
                 else
                 {
@@ -230,7 +217,7 @@ namespace DesignAuditRise.Service.Implement
                 errMsg = ex.Message;
             }
 
-            return errMsg;
+            return (filterPartByPage: filterPartByPage, zipedFiles: zipedFiles, errMsg: errMsg);
         }
 
         /// <summary>
