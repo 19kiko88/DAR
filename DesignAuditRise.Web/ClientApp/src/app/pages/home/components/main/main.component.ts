@@ -1,7 +1,7 @@
 import { environment } from 'src/environments/environment';
 import { CmdType, PostMessageService } from '../../../../core/service/post-message.service';
 import { CompareErrorResult } from '../../../../core/models/compare-error-result';
-import { PartCompareData, NetCompareData, MultipleSelectObj, DesignDiff } from '../../../../core/models/dto/response/res-dsn-compare';
+import { PartCompareData, NetCompareData, MultipleSelectObj, DesignDiff, ResDsnComePare } from '../../../../core/models/dto/response/res-dsn-compare';
 import { ToExp3File, EnumFileType } from '../../../../core/models/dto/request/to-exp-3file';
 import { ReqDsnCompare } from '../../../../core/models/dto/request/req-dsn-compare';
 import { enumUploadStatus, UploadComponent } from '../../../../shared/components/upload/upload.component';
@@ -18,6 +18,8 @@ import { Table } from 'primeng/table';
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
+import { SchematicViewerWindow } from 'src/app/core/models/schematic-viewer-window';
+import { SweetAlertOptions } from 'sweetalert2';
 
 
 @Component({
@@ -33,6 +35,7 @@ export class MainComponent implements OnInit
   @ViewChild('destinationSchematic', { static: true }) destinationSchematic!: CheckboxTreeComponent;
   @ViewChild('uploadDsn1', { static: true }) uploadDsn1!: UploadComponent;
   @ViewChild('uploadDsn2', { static: true }) uploadDsn2!: UploadComponent;
+  @ViewChild('hiddenBtn') b1 !: HTMLElement;
 
   form!:FormGroup;
   cnCompareMode: string = "";
@@ -424,7 +427,7 @@ export class MainComponent implements OnInit
   }
 
   /*
-   *開始比對
+   *線路圖比對
    */
    submit()
    {
@@ -460,7 +463,7 @@ export class MainComponent implements OnInit
 
     //關閉舊的Schematic Viewer視窗
     this._postMessageService.close(true);
- 
+
     this._rdaService.DsnCompare(data).subscribe(
       {next: res => 
         {
@@ -508,30 +511,20 @@ export class MainComponent implements OnInit
           //console.log(this.dataSource.NetData);
           this._loadingService.setLoading(false);      
 
+          
 
-          let rdcsSN = res.designSN1;
-          let designName = this.oldSourceFileName;
-          let darType = this.sourceId ? 'orcad' : 'source';
           let width = window.screen.availWidth/2 ;
           let height = window.screen.availHeight - 65;
-          let dualScreenLeft = 0;    
-                      
-          this.w1 = window.open(
-            `${environment.schematicViewerUrl}?rdcsSN=${rdcsSN}&designName=${designName}&consoleHost=${environment.apiBaseUrl}&darType=${darType}&fileId=${this.sourceId}`, 
-            "_blank", 
-            `scrollbars=1,toolbar=0,resizable=1,status=0,width=${width},height=${height},top=0,left=${dualScreenLeft},directores=0`
-            ) ?? undefined;
-
-
-          rdcsSN = res.designSN2;
-          designName = this.oldDistinationFileName;
-          darType = this.destId ? 'orcad' : 'destination';
-          dualScreenLeft = width;//window.screenLeft != undefined ? window.screenLeft : (<any>screen).left;          
-          this.w2 = window.open(
-            `${environment.schematicViewerUrl}?rdcsSN=${rdcsSN}&designName=${designName}&consoleHost=${environment.apiBaseUrl}&darType=${darType}&fileId=${this.destId}`, 
-            "_blank", 
-            `scrollbars=1,toolbar=0,resizable=1,status=0,width=${width},height=${height},top=0,left=${dualScreenLeft},directores=0`
-            ) ?? undefined;     
+          let w1Prop: SchematicViewerWindow = { rdcsSN: res.designSN1, designName: this.oldSourceFileName, darType: this.sourceId ? 'orcad' : 'source', width: width, height: height, dualScreenLeft: 0} 
+          let w2Prop: SchematicViewerWindow = { rdcsSN: res.designSN2, designName: this.oldDistinationFileName, darType: this.destId ? 'orcad' : 'destination', width: width, height: height, dualScreenLeft: width} 
+          if(!this.PopupBlock(w1Prop, w2Prop))
+          {
+            let opt: SweetAlertOptions = {
+              imageUrl: "../../../../assets/browser_blocker.jpg",
+            };
+            this._salService.showSwal('', '請允許快顯視窗顯示.', 'warning', opt);
+          }
+          
         },
         error: (err) => {          
           this._loadingService.setLoading(false);
@@ -539,6 +532,29 @@ export class MainComponent implements OnInit
         }
       });
    }  
+
+   /**
+    * 是否線路圖是否被快顯封鎖阻擋
+    * @param w1Prop 
+    * @param w2Prop 
+    * @returns true:dar快顯封鎖關閉, false:dar快顯封鎖開啟
+    */
+   PopupBlock = (w1Prop: SchematicViewerWindow, w2Prop:SchematicViewerWindow) =>
+   {
+    this.w1 = window.open(
+    `${environment.schematicViewerUrl}?rdcsSN=${w1Prop.rdcsSN}&designName=${w1Prop.designName}&consoleHost=${environment.apiBaseUrl}&darType=${w1Prop.darType}&fileId=${this.sourceId}`, 
+    "_blank", 
+    `scrollbars=1,toolbar=0,resizable=1,status=0,width=${w1Prop.width},height=${w1Prop.height},top=0,left=${w1Prop.dualScreenLeft},directores=0`
+    ) ?? undefined;
+
+    this.w2 = window.open(
+    `${environment.schematicViewerUrl}?rdcsSN=${w2Prop.rdcsSN}&designName=${w2Prop.designName}&consoleHost=${environment.apiBaseUrl}&darType=${w2Prop.darType}&fileId=${this.destId}`, 
+    "_blank", 
+    `scrollbars=1,toolbar=0,resizable=1,status=0,width=${w2Prop.width},height=${w2Prop.height},top=0,left=${w2Prop.dualScreenLeft},directores=0`
+   ) ?? undefined;   
+   
+    return (this.w1 !==null && this.w1 != undefined) && (this.w2 !==null && this.w2 != undefined);
+   }
 
    /**
     * Clear DataTable Filter
@@ -692,6 +708,27 @@ export class MainComponent implements OnInit
     }    
     //console.log(this.filterCondition.NetData);
   }
+
+   /**
+    * lastValueFrom test
+    * @param data 
+    */
+  // async CompareAsync(data: ReqDsnCompare)
+  // {
+  //   const qq$ = this._rdaService.DsnCompare(data);
+  //   const listQQ$ = of(qq$,qq$,qq$);
+  //   const resCompare = await lastValueFrom(qq$);
+
+  //   this.compareErrorResult = 
+  //   {
+  //     designSN1: resCompare.designSN1,
+  //     designSN2: resCompare.designSN2,
+  //     design1_2: resCompare.designDiff.design1_2,
+  //     design2_1: resCompare.designDiff.design2_1,
+  //     partErrors: resCompare.designDiff.partDiffs,
+  //     netErrors: resCompare.designDiff.netDiffs
+  //   }   
+  //  }  
 }
 
 class FormControlName
