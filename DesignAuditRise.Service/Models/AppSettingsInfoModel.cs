@@ -12,6 +12,7 @@
         public class OtherSettings 
         { 
             public string[] DsnAlias { get; set; }
+            public string[] IpFilters { get; set; }
         }
 
         public class PathSettings

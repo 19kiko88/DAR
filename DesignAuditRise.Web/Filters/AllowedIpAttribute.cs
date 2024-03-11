@@ -1,23 +1,40 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Options;
 
 namespace DesignAuditRise.Web.Filters
 {
     public class AllowedIpAttribute: ActionFilterAttribute
     {
-        private string[] ipList = new string[] { };
+        private readonly ILogger<AllowedIpAttribute> _logger;
+        private string[] _ipList;
 
-        public AllowedIpAttribute(string allowedIps)
+        public AllowedIpAttribute(
+            ILoggerFactory logger,
+            IOptions<AppSettingsInfoModel.OtherSettings> settings
+            )
         {
-            ipList = allowedIps.Split(',', ';');
+            /*
+             *Ref：ASP.NET Core - 在ActionFilter中使用依賴注入
+             *https://www.twblogs.net/a/5e7b0011bd9eee2116864f2e
+             */
+            _logger = logger.CreateLogger<AllowedIpAttribute>();
+            _ipList = settings.Value?.IpFilters;          
         }
+
+        //public AllowedIpAttribute(string allowedIps)
+        //{
+        //    ipList = allowedIps.Split(',', ';');
+        //}
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            var clientIp = context.HttpContext.Connection.RemoteIpAddress.ToString();            
+            var clientIp = context.HttpContext.Connection.RemoteIpAddress.ToString();
 
-            if (!ipList.Contains(clientIp)) 
+            if (!_ipList.Contains(clientIp)) 
             {
+                _logger.LogError($"非法存取IP： [{clientIp}] ip not allowed!!");
+
                 context.Result = new ContentResult()
                 {
                     StatusCode = 400,

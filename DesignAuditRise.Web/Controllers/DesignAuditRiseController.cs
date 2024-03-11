@@ -12,6 +12,7 @@ using DesignAuditRise.Web.Enums;
 using DesignAuditPedia.Models.Dsn.DesignCompare;
 using DesignAuditRise.Service.Models;
 using System.Text.RegularExpressions;
+using DesignAuditRise.Web.Filters;
 
 namespace DesignAuditRise.Web.Controllers
 {
@@ -37,7 +38,7 @@ namespace DesignAuditRise.Web.Controllers
         *172.22.136.54 => vt01
         *172.22.136.97 => vt02
         */
-        private const string _allowIpList = "172.21.130.8,172.22.136.54,172.22.136.97,::1,127.0.0.1";
+        //private const string _allowIpList = "172.21.130.8,172.22.136.54,172.22.136.97,::1,127.0.0.1";
 
         public DesignAuditRiseController(
             IDesignAuditRiseService designAuditRiseService,
@@ -584,7 +585,8 @@ namespace DesignAuditRise.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [DesignAuditRise.Web.Filters.AllowedIp(_allowIpList)]
+        [ServiceFilter(typeof(AllowedIpAttribute))]
+        //[DesignAuditRise.Web.Filters.AllowedIp(_allowIpList)]
         [Route("{darType}/{folderName}")]        
         public async Task<IActionResult> GetDrawingData(string darType, string folderName)
         {           
@@ -593,12 +595,12 @@ namespace DesignAuditRise.Web.Controllers
                 string filePath = string.Empty;
 
                 if (darType.ToLower() == "orcad")
-                {
+                {//darType：orcad, folderName：fileId
                     filePath = Utils.SecurityPathCombine(datFileTempPath, darType, folderName, _designAuditRiseService.ProtoBuffDataFileName);
                 }
                 else
-                {
-                    filePath = Utils.SecurityPathCombine(datFileTempPath, darType, folderName, _designAuditRiseService.ProtoBuffDataFileName);
+                {//darType：source/destination, folderName：user_name
+                    filePath = Utils.SecurityPathCombine(datFileTempPath, folderName, darType, _designAuditRiseService.ProtoBuffDataFileName);
                 }
 
                 if (System.IO.File.Exists(filePath))

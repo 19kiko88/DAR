@@ -27,6 +27,7 @@
     <PackageReference Include="ElmahCore" Version="2.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="7.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="7.0.10" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="UniversalLibrary.Models" Version="1.1.0" />
   </ItemGroup>

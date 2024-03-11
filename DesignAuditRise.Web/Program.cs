@@ -5,8 +5,18 @@ using ElmahCore.Mvc;
 using ElmahCore;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using System.Reflection;
+using Serilog;
+using DesignAuditRise.Web.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(new ConfigurationBuilder().AddJsonFile("seri-log.config.json").Build())
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 // Add services to the container.
 //預設使用Windows驗證
@@ -40,6 +50,7 @@ builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IOraOu
 builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IConvertPediaOuterService, DesignAuditRise.Service.OuterService.Implement.ConvertPediaOterService>();
 builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IDesignCompareOuterService, DesignAuditRise.Service.OuterService.Implement.DesignCompareOterService>();
 builder.Services.AddScoped<DesignAuditRise.Service.OuterService.Interface.IProcessDsnOuterService, DesignAuditRise.Service.OuterService.Implement.ProcessDsnOuterService>();
+builder.Services.AddScoped(typeof(AllowedIpAttribute));
 
 
 

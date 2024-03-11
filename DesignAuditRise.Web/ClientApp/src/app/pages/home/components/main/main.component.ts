@@ -520,7 +520,7 @@ export class MainComponent implements OnInit
           if(!this.PopupBlock(w1Prop, w2Prop))
           {
             let opt: SweetAlertOptions = {
-              imageUrl: "../../../../assets/browser_blocker.jpg",
+              imageUrl: "/assets/browser_blocker.jpg",
             };
             this._salService.showSwal('', '請允許快顯視窗顯示.', 'warning', opt);
           }
